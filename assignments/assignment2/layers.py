@@ -52,30 +52,31 @@ class Param:
 
 class ReLULayer:
     def __init__(self):
-        pass
+        self.diff = None
 
     def forward(self, X):
         # TODO: Implement forward pass
         # Hint: you'll need to save some information about X
         # to use it later in the backward pass
-        raise Exception("Not implemented!")
+
+        self.diff = (X > 0).astype(float)
+
+        return np.maximum(X, np.zeros_like(X))
 
     def backward(self, d_out):
         """
         Backward pass
-
         Arguments:
         d_out, np array (batch_size, num_features) - gradient
            of loss function with respect to output
-
         Returns:
         d_result: np array (batch_size, num_features) - gradient
           with respect to input
         """
         # TODO: Implement backward pass
         # Your final implementation shouldn't have any loops
-        raise Exception("Not implemented!")
-        return d_result
+
+        return self.diff * d_out
 
     def params(self):
         # ReLU Doesn't have any parameters
@@ -91,18 +92,19 @@ class FullyConnectedLayer:
     def forward(self, X):
         # TODO: Implement forward pass
         # Your final implementation shouldn't have any loops
-        raise Exception("Not implemented!")
+
+        self.X = X.copy()
+
+        return np.dot(X, self.W.value) + self.B.value
 
     def backward(self, d_out):
         """
         Backward pass
         Computes gradient with respect to input and
         accumulates gradients within self.W and self.B
-
         Arguments:
         d_out, np array (batch_size, n_output) - gradient
            of loss function with respect to output
-
         Returns:
         d_result: np array (batch_size, n_input) - gradient
           with respect to input
@@ -115,9 +117,10 @@ class FullyConnectedLayer:
         # It should be pretty similar to linear classifier from
         # the previous assignment
 
-        raise Exception("Not implemented!")
+        self.W.grad += np.dot(self.X.T, d_out)
+        self.B.grad += np.sum(d_out, axis=0, keepdims=True)
 
-        return d_input
+        return np.dot(d_out, self.W.value.T)
 
     def params(self):
         return {'W': self.W, 'B': self.B}
